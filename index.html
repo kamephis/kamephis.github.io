@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Size Configurator</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        #preview h1, #preview h2, #preview h3, #preview h4, #preview h5, #preview h6, #preview p, #preview small {
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+    <div class="container mx-auto p-4">
+        <div class="flex flex-col md:flex-row">
+            <div class="md:w-1/3 bg-white p-4 rounded-lg shadow-md">
+                <h2 class="text-2xl font-semibold mb-4">Konfiguration</h2>
+                <div class="mb-4">
+                    <label for="baseFontSize" class="block text-sm font-medium text-gray-700">Basis-Schriftgröße (px)</label>
+                    <input type="number" id="baseFontSize" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" value="16">
+                </div>
+                <div class="mb-4">
+                    <label for="scale" class="block text-sm font-medium text-gray-700">Textgrößenskala</label>
+                    <select id="scale" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                        <option value="1.067">Minor Second (1.067)</option>
+                        <option value="1.125">Major Second (1.125)</option>
+                        <option value="1.200">Minor Third (1.200)</option>
+                        <option value="1.250">Major Third (1.250)</option>
+                        <option value="1.333">Perfect Fourth (1.333)</option>
+                        <option value="1.414">Augmented Fourth (1.414)</option>
+                        <option value="1.500">Perfect Fifth (1.500)</option>
+                        <option value="1.618">Golden Ratio (1.618)</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label for="fontFamily" class="block text-sm font-medium text-gray-700">Schriftart</label>
+                    <select id="fontFamily" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                        <!-- Google Fonts will be populated here by JavaScript -->
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label for="fontWeight" class="block text-sm font-medium text-gray-700">Schriftschnitt / Gewicht</label>
+                    <select id="fontWeight" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                        <!-- Font weights will be populated here based on the selected font -->
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label for="lineHeight" class="block text-sm font-medium text-gray-700">Zeilenhöhe</label>
+                    <input type="number" step="0.1" id="lineHeight" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" value="1.6">
+                </div>
+                <div class="mb-4">
+                    <label for="letterSpacing" class="block text-sm font-medium text-gray-700">Buchstabenabstand (em)</label>
+                    <input type="number" step="0.01" id="letterSpacing" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" value="0">
+                </div>
+                <div class="mb-4">
+                    <label for="textColor" class="block text-sm font-medium text-gray-700">Textfarbe</label>
+                    <input type="color" id="textColor" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" value="#000000">
+                </div>
+                <div class="mb-4">
+                    <label for="bgColor" class="block text-sm font-medium text-gray-700">Hintergrundfarbe</label>
+                    <input type="color" id="bgColor" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" value="#ffffff">
+                </div>
+                <div class="mb-4">
+                    <label for="previewText" class="block text-sm font-medium text-gray-700">Vorschautext</label>
+                    <input type="text" id="previewText" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" value="The quick brown fox jumps over the lazy dog">
+                </div>
+            </div>
+            <div id="preview" class="md:w-2/3 bg-white p-4 ml-0 md:ml-4 mt-4 md:mt-0 rounded-lg shadow-md">
+                <h2 class="text-2xl font-semibold mb-4">Vorschau</h2>
+                <div id="headings">
+                    <div id="h1">
+                        <span id="h1-info"></span>
+                        <h1>H1: The quick brown fox jumps over the lazy dog</h1>
+                    </div>
+                    <div id="h2">
+                        <span id="h2-info"></span>
+                        <h2>H2: The quick brown fox jumps over the lazy dog</h2>
+                    </div>
+                    <div id="h3">
+                        <span id="h3-info"></span>
+                        <h3>H3: The quick brown fox jumps over the lazy dog</h3>
+                    </div>
+                    <div id="h4">
+                        <span id="h4-info"></span>
+                        <h4>H4: The quick brown fox jumps over the lazy dog</h4>
+                    </div>
+                    <div id="h5">
+                        <span id="h5-info"></span>
+                        <h5>H5: The quick brown fox jumps over the lazy dog</h5>
+                    </div>
+                    <div id="h6">
+                        <span id="h6-info"></span>
+                        <h6>H6: The quick brown fox jumps over the lazy dog</h6>
+                    </div>
+                </div>
+                <div id="paragraph">
+                    <span id="paragraph-info"></span>
+                    <p>Paragraph: The quick brown fox jumps over the lazy dog</p>
+                </div>
+                <div id="small">
+                    <span id="small-info"></span>
+                    <small>Small: The quick brown fox jumps over the lazy dog</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const API_KEY = process.env.GOOGLE_FONT_API_KEY; // Replace with your Google API key
+
+        async function fetchGoogleFonts() {
+            const response = await fetch(`https://www.googleapis.com/webfonts/v1/webfonts?key=${API_KEY}`);
+            const data = await response.json();
+            const fontFamilySelect = document.getElementById('fontFamily');
+
+            data.items.forEach(font => {
+                const option = document.createElement('option');
+                option.value = font.family;
+                option.textContent = font.family;
+                option.dataset.variants = JSON.stringify(font.variants);
+                fontFamilySelect.appendChild(option);
+            });
+
+            updateFontWeights(); // Initialize font weights based on the first font
+            updatePreview();
+        }
+
+        function updateFontWeights() {
+            const fontFamilySelect = document.getElementById('fontFamily');
+            const fontWeightSelect = document.getElementById('fontWeight');
+            const selectedFont = fontFamilySelect.options[fontFamilySelect.selectedIndex];
+            const variants = JSON.parse(selectedFont.dataset.variants);
+
+            // Clear previous font weights
+            fontWeightSelect.innerHTML = '';
+
+            variants.forEach(variant => {
+                const weight = variant.match(/\d+/) ? variant.match(/\d+/)[0] : '400';
+                const option = document.createElement('option');
+                option.value = weight;
+                option.textContent = weight;
+                fontWeightSelect.appendChild(option);
+            });
+
+            updatePreview();
+        }
+
+        function loadGoogleFont(fontFamily, fontWeight) {
+            const linkId = 'google-font-link';
+            let link = document.getElementById(linkId);
+
+            if (link) {
+                link.href = `https://fonts.googleapis.com/css2?family=${fontFamily.replace(/ /g, '+')}:wght@${fontWeight}&display=swap`;
+            } else {
+                link = document.createElement('link');
+                link.id = linkId;
+                link.href = `https://fonts.googleapis.com/css2?family=${fontFamily.replace(/ /g, '+')}:wght@${fontWeight}&display=swap`;
+                link.rel = 'stylesheet';
+                document.head.appendChild(link);
+            }
+        }
+
+        function luminance(r, g, b) {
+            const a = [r, g, b].map(v => {
+                v /= 255;
+                return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+            });
+            return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+        }
+
+        function calculateContrast(foreground, background) {
+            const fRgb = parseInt(foreground.slice(1), 16);
+            const bRgb = parseInt(background.slice(1), 16);
+
+            const fL = luminance((fRgb >> 16) & 0xff, (fRgb >> 8) & 0xff, fRgb & 0xff);
+            const bL = luminance((bRgb >> 16) & 0xff, (bRgb >> 8) & 0xff, bRgb & 0xff);
+
+            return (Math.max(fL, bL) + 0.05) / (Math.min(fL, bL) + 0.05);
+        }
+
+        function getContrastRating(contrast, fontSizePx) {
+            if (fontSizePx >= 18 || (fontSizePx >= 14 && fontWeight >= 700)) {
+                // Large text
+                return contrast >= 3 ? 'AA Large' : 'Fail';
+            } else {
+                // Normal text
+                return contrast >= 4.5 ? 'AAA' : contrast >= 3 ? 'AA' : 'Fail';
+            }
+        }
+
+        function updatePreview() {
+            const baseFontSize = parseFloat(document.getElementById('baseFontSize').value);
+            const scale = parseFloat(document.getElementById('scale').value);
+            const fontFamily = document.getElementById('fontFamily').value;
+            const fontWeight = document.getElementById('fontWeight').value;
+            const lineHeight = parseFloat(document.getElementById('lineHeight').value);
+            const letterSpacing = parseFloat(document.getElementById('letterSpacing').value);
+            const previewText = document.getElementById('previewText').value;
+            const textColor = document.getElementById('textColor').value;
+            const bgColor = document.getElementById('bgColor').value;
+
+            loadGoogleFont(fontFamily, fontWeight);
+
+            const headings = document.getElementById('headings').querySelectorAll('h1, h2, h3, h4, h5, h6');
+            const paragraph = document.querySelector('#paragraph p');
+            const small = document.querySelector('#small small');
+
+            const elements = [
+                { element: headings[0], info: document.getElementById('h1-info') },
+                { element: headings[1], info: document.getElementById('h2-info') },
+                { element: headings[2], info: document.getElementById('h3-info') },
+                { element: headings[3], info: document.getElementById('h4-info') },
+                { element: headings[4], info: document.getElementById('h5-info') },
+                { element: headings[5], info: document.getElementById('h6-info') },
+                { element: paragraph, info: document.getElementById('paragraph-info') },
+                { element: small, info: document.getElementById('small-info') }
+            ];
+
+            document.getElementById('preview').style.backgroundColor = bgColor;
+            document.getElementById('preview').style.color = textColor;
+
+            elements.forEach(({ element, info }, index) => {
+                const scaleFactor = Math.pow(scale, index);
+                const fontSizePx = baseFontSize * Math.pow(scale, 6 - index);
+                const fontSizeRem = fontSizePx / baseFontSize;
+                const fontSizeEm = fontSizeRem;
+
+                element.style.fontSize = `${fontSizePx}px`;
+                element.style.fontFamily = fontFamily;
+                element.style.fontWeight = fontWeight;
+                element.style.lineHeight = lineHeight;
+                element.style.letterSpacing = `${letterSpacing}em`;
+                element.textContent = `${element.tagName}: ${previewText}`;
+
+                const contrastRatio = calculateContrast(textColor, bgColor).toFixed(2);
+                const contrastRating = getContrastRating(contrastRatio, fontSizePx);
+                info.textContent = `Size: ${fontSizePx}px / ${fontSizeRem}rem / ${fontSizeEm}em, Contrast: ${contrastRatio} (${contrastRating})`;
+            });
+
+            paragraph.textContent = `Paragraph: ${previewText}`;
+            small.textContent = `Small: ${previewText}`;
+        }
+
+        document.querySelectorAll('input, select').forEach(element => {
+            element.addEventListener('input', updatePreview);
+        });
+
+        document.getElementById('fontFamily').addEventListener('change', updateFontWeights);
+
+        fetchGoogleFonts();
+    </script>
+</body>
+</html>
